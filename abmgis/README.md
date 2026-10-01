@@ -29,7 +29,7 @@ abmgis/
 
 ## Vì sao không chạy nguyên xi file `.nlogo`?
 
-Mô hình gốc dùng `extensions [gis]` và `file-open/file-read` để đọc `neighbors.txt`. NetLogo Web chạy trong trình duyệt nên không có file-system như NetLogo Desktop. Bản web thay phần I/O này bằng JSON/HTTP nhưng giữ cấu trúc thuật toán và topology của mô hình.
+Mô hình gốc dùng `extensions [gis]` và `file-open/file-read` để đọc `neighbors.txt`. NetLogo Web chạy trong trình duyệt nên không có file-system như NetLogo Desktop. Bản `segregationDC-web.nlogo` dùng `extensions [gis fetch]`, tải GeoJSON qua `fetch:url-async` và nạp bằng `gis:load-dataset-from-string`; topology láng giềng được nhúng vào model để giữ nguyên luật tác tử.
 
 ## PMTiles
 
@@ -49,3 +49,8 @@ Sau đó mở `http://localhost:8000`.
 ## GitHub Pages
 
 Workflow `.github/workflows/abmgis-pages.yml` đóng gói thư mục `abmgis/` và deploy lên GitHub Pages sau mỗi push vào `main` có thay đổi liên quan.
+
+## Chạy trực tiếp
+
+- ABMGIS GitHub Pages: https://base27-cvnss.github.io/NetLogo/
+- NetLogo Web: https://netlogoweb.org/launch#https://base27-cvnss.github.io/NetLogo/model/segregationDC-web.nlogo
