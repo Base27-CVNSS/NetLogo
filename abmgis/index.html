@@ -1,97 +1,131 @@
 <!doctype html>
 <html lang="vi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="ABM GIS mô phỏng Schelling trên nền NetLogo Web, MapLibre và PMTiles.">
-<title>ABM GIS · NetLogo × PMTiles</title>
-<link rel="preconnect" href="https://unpkg.com">
-<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css">
-<link rel="stylesheet" href="assets/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#07141c" />
+  <title>ABMGIS · NetLogo + PMTiles</title>
+  <meta name="description" content="Mô phỏng tác tử GIS trên nền NetLogo, MapLibre và PMTiles." />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-<header class="topbar">
-  <div class="brand"><span class="brand-mark">ABM</span><div><b>ABM GIS</b><small>NetLogo × PMTiles · mô phỏng tác tử trên không gian địa lý</small></div></div>
-  <nav class="tabs" aria-label="Chế độ hiển thị">
-    <button class="tab active" data-tab="map">Bản đồ mô phỏng</button>
-    <button class="tab" data-tab="netlogo">NetLogo Web</button>
-    <button class="tab" data-tab="about">Mô hình</button>
-  </nav>
-  <a class="repo-link" href="https://github.com/Base27-CVNSS/NetLogo" target="_blank" rel="noreferrer">Mã nguồn ↗</a>
-</header>
-
-<main>
-<section id="view-map" class="view active">
-  <aside class="sidebar">
-    <section class="panel hero-panel">
-      <p class="eyebrow">SCHELLING SEGREGATION · WASHINGTON, DC</p>
-      <h1>Mô phỏng phân tách không gian bằng tác tử</h1>
-      <p>Mỗi polygon là một vùng cư trú. Tác tử đỏ/xanh đánh giá các polygon láng giềng và chỉ chuyển sang vùng trống kề bên khi chưa đạt ngưỡng tương đồng.</p>
-    </section>
-
-    <section class="panel controls">
-      <div class="panel-title"><b>Điều khiển mô phỏng</b><span id="runState" class="status-pill">Sẵn sàng</span></div>
-      <label class="control-label" for="threshold">Tỷ lệ hàng xóm cùng nhóm để hài lòng <output id="thresholdValue">35%</output></label>
-      <input id="threshold" type="range" min="1" max="100" value="35" step="5">
-      <label class="control-label" for="speed">Tốc độ <output id="speedValue">4 tick/s</output></label>
-      <input id="speed" type="range" min="1" max="12" value="4" step="1">
-      <div class="button-grid">
-        <button id="setupBtn" class="btn primary">Thiết lập</button>
-        <button id="stepBtn" class="btn">Chạy 1 bước</button>
-        <button id="runBtn" class="btn accent">Chạy liên tục</button>
-        <button id="resetViewBtn" class="btn">Về toàn cảnh</button>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>
+          <div class="eyebrow">VIETFLEX · AGENT-BASED GIS</div>
+          <h1>ABMGIS <span>NetLogo × PMTiles</span></h1>
+        </div>
       </div>
-      <label class="toggle"><input id="showUnhappy" type="checkbox" checked><span>Đánh dấu tác tử chưa hài lòng</span></label>
-      <label class="toggle"><input id="showAgents" type="checkbox" checked><span>Hiện tâm tác tử</span></label>
-    </section>
+      <div class="top-actions">
+        <span id="runtimeBadge" class="badge"><i></i> PMTiles đang nạp</span>
+        <a class="ghost-btn" href="./model/segregationDC-web.nlogo" download>Tải mô hình NetLogo</a>
+        <a class="ghost-btn" href="https://github.com/Base27-CVNSS/NetLogo/tree/main/abmgis" target="_blank" rel="noopener">Mã nguồn</a>
+      </div>
+    </header>
 
-    <section class="stats-grid" aria-label="Thống kê">
-      <article class="stat"><span>Tick</span><b id="tickStat">0</b></article>
-      <article class="stat"><span>Hài lòng</span><b id="happyStat">—</b></article>
-      <article class="stat"><span>Đỏ</span><b id="redStat">75</b></article>
-      <article class="stat"><span>Xanh</span><b id="blueStat">75</b></article>
-      <article class="stat"><span>Vùng trống</span><b id="emptyStat">38</b></article>
-      <article class="stat"><span>Polygon</span><b id="polygonStat">188</b></article>
-    </section>
+    <main class="workspace">
+      <aside class="panel controls-panel">
+        <section class="panel-section hero-copy">
+          <div class="section-kicker">MÔ PHỎNG PHÂN TÁCH KHÔNG GIAN</div>
+          <h2>Schelling trên địa lý thật</h2>
+          <p>188 vùng của Washington, D.C. được chuyển từ Shapefile của mô hình NetLogo gốc. Tác tử Đỏ/Xanh chỉ di chuyển sang vùng trống kề cạnh khi mức tương đồng không đạt ngưỡng.</p>
+        </section>
 
-    <section class="panel chart-panel">
-      <div class="panel-title"><b>Số tác tử hài lòng theo thời gian</b><span id="convergenceText">—</span></div>
-      <canvas id="historyChart" width="720" height="240" aria-label="Biểu đồ hội tụ"></canvas>
-    </section>
-  </aside>
+        <section class="panel-section">
+          <div class="section-title"><span>Điều khiển</span><strong id="runState">Sẵn sàng</strong></div>
+          <div class="button-grid">
+            <button id="setupBtn" class="primary">Khởi tạo</button>
+            <button id="stepBtn">Chạy 1 bước</button>
+            <button id="runBtn">Chạy liên tục</button>
+            <button id="resetViewBtn">Về toàn cảnh</button>
+          </div>
+          <label class="control-row">
+            <span>Ngưỡng hài lòng <b id="thresholdValue">35%</b></span>
+            <input id="threshold" type="range" min="1" max="100" step="1" value="35" />
+          </label>
+          <label class="control-row">
+            <span>Tốc độ <b id="speedValue">4 bước/s</b></span>
+            <input id="speed" type="range" min="1" max="12" step="1" value="4" />
+          </label>
+          <div class="preset-row">
+            <button data-threshold="25">Khoan dung 25%</button>
+            <button data-threshold="50">Cân bằng 50%</button>
+            <button data-threshold="75">Khắt khe 75%</button>
+          </div>
+        </section>
 
-  <section class="map-shell">
-    <div id="map"></div>
-    <div class="map-badge"><span class="dot red"></span>Đỏ <span class="dot blue"></span>Xanh <span class="dot empty"></span>Trống</div>
-    <div class="map-tech">PMTiles · MapLibre GL JS · GeoJSON trạng thái động</div>
-    <div id="inspector" class="inspector hidden"></div>
-  </section>
-</section>
+        <section class="panel-section stats-grid">
+          <article><span>Tick</span><b id="tickStat">0</b></article>
+          <article><span>Tác tử</span><b id="agentStat">150</b></article>
+          <article><span>Hài lòng</span><b id="happyStat">—</b></article>
+          <article><span>Vùng trống</span><b id="emptyStat">38</b></article>
+          <article><span>Di chuyển</span><b id="moveStat">0</b></article>
+          <article><span>Đồng nhóm TB</span><b id="sameStat">—</b></article>
+        </section>
 
-<section id="view-netlogo" class="view netlogo-view">
-  <div class="netlogo-header">
-    <div><p class="eyebrow">NETLOGO WEB</p><h2>Model NetLogo chạy trực tiếp trong trình duyệt</h2><p>Bản này dùng <code>gis:load-dataset-from-string</code> với GeoJSON tải qua Fetch để không phụ thuộc file system.</p></div>
-    <a id="openNetLogo" class="btn primary linkbtn" target="_blank" rel="noreferrer">Mở toàn màn hình ↗</a>
+        <section class="panel-section">
+          <div class="section-title"><span>Lớp bản đồ</span><strong>GIS</strong></div>
+          <label class="toggle"><input id="basemapToggle" type="checkbox" checked><span></span> Nền PMTiles</label>
+          <label class="toggle"><input id="areasToggle" type="checkbox" checked><span></span> Vùng tác tử</label>
+          <label class="toggle"><input id="outlineToggle" type="checkbox" checked><span></span> Ranh giới</label>
+          <label class="toggle"><input id="labelsToggle" type="checkbox"><span></span> Nhãn ID vùng</label>
+        </section>
+
+        <section class="panel-section source-note">
+          <div class="section-title"><span>Nguồn mô hình</span><strong>NetLogo</strong></div>
+          <code>setup → move → update-colors → tick</code>
+          <p>Bản web giữ topology 1.130 quan hệ láng giềng từ dữ liệu gốc; I/O file được thay bằng JSON/HTTP để tương thích trình duyệt.</p>
+        </section>
+      </aside>
+
+      <section class="map-stage">
+        <div id="map" aria-label="Bản đồ mô phỏng ABMGIS"></div>
+        <div class="map-overlay top-left">
+          <div class="legend">
+            <span><i class="swatch red"></i> Nhóm Đỏ</span>
+            <span><i class="swatch blue"></i> Nhóm Xanh</span>
+            <span><i class="swatch empty"></i> Chưa cư trú</span>
+          </div>
+        </div>
+        <div class="map-overlay bottom-left info-card">
+          <div><span>Hover</span><b id="hoverWard">Di chuột lên một vùng</b></div>
+          <div><span>Trạng thái</span><b id="hoverState">—</b></div>
+          <div><span>Láng giềng</span><b id="hoverNeighbors">—</b></div>
+        </div>
+      </section>
+
+      <aside class="panel insight-panel">
+        <section class="panel-section">
+          <div class="section-title"><span>Diễn biến</span><strong>Hài lòng theo thời gian</strong></div>
+          <canvas id="chart" width="520" height="220"></canvas>
+          <div class="chart-scale"><span>0%</span><span>100%</span></div>
+        </section>
+        <section class="panel-section">
+          <div class="section-title"><span>Chỉ số cấu trúc</span><strong id="phaseLabel">Khởi tạo</strong></div>
+          <div class="meter-row"><span>Đỏ</span><div><i id="redBar"></i></div><b id="redCount">75</b></div>
+          <div class="meter-row"><span>Xanh</span><div><i id="blueBar"></i></div><b id="blueCount">75</b></div>
+          <div class="meter-row"><span>Trống</span><div><i id="emptyBar"></i></div><b id="emptyCount">38</b></div>
+          <p class="hint">Khi ngưỡng tăng, số tác tử bất mãn thường tăng; hệ thống có xu hướng tự tái cấu trúc thành các cụm đồng màu hơn.</p>
+        </section>
+        <section class="panel-section">
+          <div class="section-title"><span>Nhật ký mô phỏng</span><strong>ABM runtime</strong></div>
+          <div id="log" class="log" aria-live="polite"></div>
+        </section>
+        <section class="panel-section architecture">
+          <div class="section-title"><span>Kiến trúc</span><strong>Web-native</strong></div>
+          <div class="flow"><b>NetLogo</b><span>→</span><b>Topology</b><span>→</span><b>ABM</b><span>→</span><b>MapLibre</b><span>→</span><b>PMTiles</b></div>
+          <p>Mô phỏng chạy tại máy người dùng; GitHub Pages chỉ phục vụ tệp tĩnh. Không cần backend.</p>
+        </section>
+      </aside>
+    </main>
   </div>
-  <iframe id="netlogoFrame" title="NetLogo Web model" loading="lazy" allow="fullscreen"></iframe>
-</section>
 
-<section id="view-about" class="view about-view">
-  <div class="about-grid">
-    <article class="panel"><p class="eyebrow">NGUYÊN LÝ</p><h2>ABM + GIS</h2><p>Mô hình gốc dùng 188 polygon Washington, DC. Mỗi polygon có trạng thái RED, BLUE hoặc UNOCCUPIED. Tác tử quan sát hàng xóm hình học, tính tỷ lệ cùng nhóm và di chuyển sang polygon trống liền kề khi chưa hài lòng.</p></article>
-    <article class="panel"><p class="eyebrow">KIẾN TRÚC WEB</p><h2>NetLogo × PMTiles</h2><p>NetLogo Web giữ phiên bản tham chiếu của luật tác tử. Giao diện ABM GIS sử dụng cùng trạng thái và topology để điều khiển trực quan; PMTiles cung cấp nền bản đồ, trong khi GeoJSON cập nhật trạng thái theo từng tick.</p></article>
-    <article class="panel"><p class="eyebrow">DỮ LIỆU</p><h2>Topology có sẵn</h2><p>Quan hệ láng giềng lấy từ <code>neighbors.txt</code> trong bài tập gốc. Không cần tính lại giao cắt ở mỗi bước, phù hợp mô phỏng lặp nhiều tick trên trình duyệt.</p></article>
-    <article class="panel"><p class="eyebrow">MỞ RỘNG</p><h2>ABM GIS Việt Nam</h2><p>Có thể thay DC bằng phường/xã, thửa đất, lưới giao thông hoặc vùng dịch vụ; tác tử có thể đại diện hộ dân, xe, drone, cảm biến, doanh nghiệp hoặc dòng di cư. PMTiles phù hợp nền dữ liệu lớn và chỉ tải tile theo vùng nhìn.</p></article>
-  </div>
-  <div class="flow">
-    <span>PMTiles GIS</span><i>→</i><span>Polygon + topology</span><i>→</i><span>Luật NetLogo</span><i>→</i><span>Tick ABM</span><i>→</i><span>Bản đồ trạng thái</span>
-  </div>
-</section>
-</main>
-
-<script src="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js"></script>
-<script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
-<script src="https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js"></script>
-<script src="assets/app.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
