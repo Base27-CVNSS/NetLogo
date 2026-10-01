@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="ABM GIS mô phỏng Schelling trên nền NetLogo Web, MapLibre và PMTiles.">
+<title>ABM GIS · NetLogo × PMTiles</title>
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">ABM</span><div><b>ABM GIS</b><small>NetLogo × PMTiles · mô phỏng tác tử trên không gian địa lý</small></div></div>
+  <nav class="tabs" aria-label="Chế độ hiển thị">
+    <button class="tab active" data-tab="map">Bản đồ mô phỏng</button>
+    <button class="tab" data-tab="netlogo">NetLogo Web</button>
+    <button class="tab" data-tab="about">Mô hình</button>
+  </nav>
+  <a class="repo-link" href="https://github.com/Base27-CVNSS/NetLogo" target="_blank" rel="noreferrer">Mã nguồn ↗</a>
+</header>
+
+<main>
+<section id="view-map" class="view active">
+  <aside class="sidebar">
+    <section class="panel hero-panel">
+      <p class="eyebrow">SCHELLING SEGREGATION · WASHINGTON, DC</p>
+      <h1>Mô phỏng phân tách không gian bằng tác tử</h1>
+      <p>Mỗi polygon là một vùng cư trú. Tác tử đỏ/xanh đánh giá các polygon láng giềng và chỉ chuyển sang vùng trống kề bên khi chưa đạt ngưỡng tương đồng.</p>
+    </section>
+
+    <section class="panel controls">
+      <div class="panel-title"><b>Điều khiển mô phỏng</b><span id="runState" class="status-pill">Sẵn sàng</span></div>
+      <label class="control-label" for="threshold">Tỷ lệ hàng xóm cùng nhóm để hài lòng <output id="thresholdValue">35%</output></label>
+      <input id="threshold" type="range" min="1" max="100" value="35" step="5">
+      <label class="control-label" for="speed">Tốc độ <output id="speedValue">4 tick/s</output></label>
+      <input id="speed" type="range" min="1" max="12" value="4" step="1">
+      <div class="button-grid">
+        <button id="setupBtn" class="btn primary">Thiết lập</button>
+        <button id="stepBtn" class="btn">Chạy 1 bước</button>
+        <button id="runBtn" class="btn accent">Chạy liên tục</button>
+        <button id="resetViewBtn" class="btn">Về toàn cảnh</button>
+      </div>
+      <label class="toggle"><input id="showUnhappy" type="checkbox" checked><span>Đánh dấu tác tử chưa hài lòng</span></label>
+      <label class="toggle"><input id="showAgents" type="checkbox" checked><span>Hiện tâm tác tử</span></label>
+    </section>
+
+    <section class="stats-grid" aria-label="Thống kê">
+      <article class="stat"><span>Tick</span><b id="tickStat">0</b></article>
+      <article class="stat"><span>Hài lòng</span><b id="happyStat">—</b></article>
+      <article class="stat"><span>Đỏ</span><b id="redStat">75</b></article>
+      <article class="stat"><span>Xanh</span><b id="blueStat">75</b></article>
+      <article class="stat"><span>Vùng trống</span><b id="emptyStat">38</b></article>
+      <article class="stat"><span>Polygon</span><b id="polygonStat">188</b></article>
+    </section>
+
+    <section class="panel chart-panel">
+      <div class="panel-title"><b>Số tác tử hài lòng theo thời gian</b><span id="convergenceText">—</span></div>
+      <canvas id="historyChart" width="720" height="240" aria-label="Biểu đồ hội tụ"></canvas>
+    </section>
+  </aside>
+
+  <section class="map-shell">
+    <div id="map"></div>
+    <div class="map-badge"><span class="dot red"></span>Đỏ <span class="dot blue"></span>Xanh <span class="dot empty"></span>Trống</div>
+    <div class="map-tech">PMTiles · MapLibre GL JS · GeoJSON trạng thái động</div>
+    <div id="inspector" class="inspector hidden"></div>
+  </section>
+</section>
+
+<section id="view-netlogo" class="view netlogo-view">
+  <div class="netlogo-header">
+    <div><p class="eyebrow">NETLOGO WEB</p><h2>Model NetLogo chạy trực tiếp trong trình duyệt</h2><p>Bản này dùng <code>gis:load-dataset-from-string</code> với GeoJSON tải qua Fetch để không phụ thuộc file system.</p></div>
+    <a id="openNetLogo" class="btn primary linkbtn" target="_blank" rel="noreferrer">Mở toàn màn hình ↗</a>
+  </div>
+  <iframe id="netlogoFrame" title="NetLogo Web model" loading="lazy" allow="fullscreen"></iframe>
+</section>
+
+<section id="view-about" class="view about-view">
+  <div class="about-grid">
+    <article class="panel"><p class="eyebrow">NGUYÊN LÝ</p><h2>ABM + GIS</h2><p>Mô hình gốc dùng 188 polygon Washington, DC. Mỗi polygon có trạng thái RED, BLUE hoặc UNOCCUPIED. Tác tử quan sát hàng xóm hình học, tính tỷ lệ cùng nhóm và di chuyển sang polygon trống liền kề khi chưa hài lòng.</p></article>
+    <article class="panel"><p class="eyebrow">KIẾN TRÚC WEB</p><h2>NetLogo × PMTiles</h2><p>NetLogo Web giữ phiên bản tham chiếu của luật tác tử. Giao diện ABM GIS sử dụng cùng trạng thái và topology để điều khiển trực quan; PMTiles cung cấp nền bản đồ, trong khi GeoJSON cập nhật trạng thái theo từng tick.</p></article>
+    <article class="panel"><p class="eyebrow">DỮ LIỆU</p><h2>Topology có sẵn</h2><p>Quan hệ láng giềng lấy từ <code>neighbors.txt</code> trong bài tập gốc. Không cần tính lại giao cắt ở mỗi bước, phù hợp mô phỏng lặp nhiều tick trên trình duyệt.</p></article>
+    <article class="panel"><p class="eyebrow">MỞ RỘNG</p><h2>ABM GIS Việt Nam</h2><p>Có thể thay DC bằng phường/xã, thửa đất, lưới giao thông hoặc vùng dịch vụ; tác tử có thể đại diện hộ dân, xe, drone, cảm biến, doanh nghiệp hoặc dòng di cư. PMTiles phù hợp nền dữ liệu lớn và chỉ tải tile theo vùng nhìn.</p></article>
+  </div>
+  <div class="flow">
+    <span>PMTiles GIS</span><i>→</i><span>Polygon + topology</span><i>→</i><span>Luật NetLogo</span><i>→</i><span>Tick ABM</span><i>→</i><span>Bản đồ trạng thái</span>
+  </div>
+</section>
+</main>
+
+<script src="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
+<script src="https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
