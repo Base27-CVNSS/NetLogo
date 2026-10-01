@@ -1,0 +1,10 @@
+{
+  "polygons": 188,
+  "red": 75,
+  "blue": 75,
+  "unoccupied": 38,
+  "neighborPairs": 1130,
+  "crsOriginal": "EPSG:4269",
+  "crsWeb": "EPSG:4326",
+  "source": "Week 6/segregationDC.nlogo"
+}
