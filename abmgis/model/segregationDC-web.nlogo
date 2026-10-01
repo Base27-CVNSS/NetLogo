@@ -1,6 +1,6 @@
-extensions [gis]
+extensions [gis fetch]
 
-globals [dc-dataset neighbor-pairs
+globals [dc-dataset neighbor-pairs loaded? data-url
 ]
 
 ;;What do the patches own?
@@ -23,8 +23,14 @@ turtles-own[tcolor
 to setup
   ca
   reset-ticks
-  set dc-dataset gis:load-dataset "https://raw.githubusercontent.com/Base27-CVNSS/NetLogo/main/abmgis/data/dc.geojson"  ;; Web: GeoJSON over HTTPS
+  set loaded? false
+  set data-url "https://raw.githubusercontent.com/Base27-CVNSS/NetLogo/main/abmgis/data/dc.geojson"
+  ;; NetLogo Web không có file system: tải GeoJSON qua Fetch rồi nạp từ chuỗi.
+  fetch:url-async data-url [ geojson-text -> finish-setup geojson-text ]
+end
 
+to finish-setup [geojson-text]
+  set dc-dataset gis:load-dataset-from-string "geojson" geojson-text
   gis:set-world-envelope gis:envelope-of dc-dataset
 
 
@@ -78,7 +84,7 @@ to setup
   ;;use this line to verify if we get the right neighbors
   ;;ask one-of patches with [ID > 0] [print myneighbors   ask myneighbors [sprout 1]]
 
-
+  set loaded? true
 end
 
 to setcolor
@@ -87,6 +93,7 @@ to setcolor
 end
 
 to go
+  if not loaded? [ stop ]
 
   move
   ask patches with [ID > 0] [if count turtles-here > 1 [print "ERROR"]]  ;;verification
@@ -254,7 +261,7 @@ MONITOR
 106
 255
 Red
-count turtles with [mycolor = \"RED\"]
+count turtles with [tcolor = \"RED\"]
 17
 1
 11
@@ -265,7 +272,7 @@ MONITOR
 187
 254
 Blue
-count turtles with [mycolor = \"BLUE\"]
+count turtles with [tcolor = \"BLUE\"]
 17
 1
 11
