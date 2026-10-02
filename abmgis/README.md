@@ -1,56 +1,53 @@
-# ABMGIS — NetLogo × PMTiles
+# ABMGIS Rain-60
 
-ABMGIS là bản web hoá mô hình `segregationDC.nlogo` trong `Week 6.zip`, kết hợp tư duy Agent-Based Modeling của NetLogo với GIS web bằng MapLibre GL JS và PMTiles.
+ABMGIS Rain-60 là bản nâng cấp web-native của mô hình `segregationDC.nlogo` trong `Week 6.zip`.
 
-## Mục tiêu
+## Khác biệt quan trọng
 
-- Chạy trực tiếp trên GitHub Pages, không cần Java/JVM hoặc backend.
-- Giao diện tiếng Việt, responsive.
-- Bảo toàn logic mô hình Schelling từ NetLogo: `setup → move → update-colors → tick`.
-- Dùng đúng 188 polygon và 1.130 quan hệ láng giềng từ dữ liệu gốc.
-- Hiển thị nền PMTiles bằng MapLibre; mô phỏng cập nhật màu polygon theo trạng thái tác tử.
-- Giữ cả mô hình NetLogo gốc và một bản web hoá trong `model/`.
+Bản cũ dùng màu polygon như trạng thái đại diện cho tác tử. Rain-60 tách hai lớp state:
 
-## Cấu trúc
+- **GIS Environment**: 188 polygon, topology láng giềng, mưa tích lũy, khả năng thoát nước, mức ngập, khả năng tiếp cận và shelter.
+- **Agents**: 150 tác tử Đỏ/Xanh có ID, home zone, ngưỡng xã hội, ngưỡng chịu ngập, mobility, trạng thái quyết định, mục tiêu, route và trail.
+
+Polygon vì vậy không còn là agent. Đỏ/Xanh được render bằng point layer độc lập.
+
+## Chu trình 1 tick = 1 phút
 
 ```text
-abmgis/
-├── index.html
-├── styles.css
-├── app.js
-├── data/
-│   ├── dc.geojson
-│   ├── neighbors.json
-│   └── metadata.json
-└── model/
-    ├── segregationDC-original.nlogo
-    └── segregationDC-web.nlogo
+rain
+  -> hydrology
+  -> accessibility
+  -> perceive social + flood state
+  -> evaluate spatial utility
+  -> decide stay / relocate / evacuate
+  -> move one topology edge
+  -> update exposure
+  -> render MapLibre
 ```
 
-## Vì sao không chạy nguyên xi file `.nlogo`?
+Kịch bản mặc định chạy 60 tick = 60 phút mưa liên tục.
 
-Mô hình gốc dùng `extensions [gis]` và `file-open/file-read` để đọc `neighbors.txt`. NetLogo Web chạy trong trình duyệt nên không có file-system như NetLogo Desktop. Bản `segregationDC-web.nlogo` dùng `extensions [gis fetch]`, tải GeoJSON qua `fetch:url-async` và nạp bằng `gis:load-dataset-from-string`; topology láng giềng được nhúng vào model để giữ nguyên luật tác tử.
+## Utility của agent
 
-## PMTiles
+Mỗi agent đánh giá vị trí từ ba thành phần chính:
 
-Ứng dụng đăng ký `pmtiles://` protocol cho MapLibre bằng `pmtiles.js` và dùng PMTiles vector demo của MapLibre làm nền mặc định. Có fallback sang OpenFreeMap nếu nguồn demo PMTiles không tải được.
+- mức tương đồng xã hội (Schelling),
+- độ an toàn trước ngập,
+- khả năng tiếp cận.
 
-## Chạy local
+Khi hazard tăng, trọng số an toàn tăng và trọng số xã hội giảm. Agent có thể tái định cư vì không hài lòng xã hội hoặc sơ tán vì mức ngập vượt ngưỡng chịu đựng.
 
-Do trình duyệt chặn `fetch()` khi mở trực tiếp bằng `file://`, hãy chạy một static server:
+## Lưu ý khoa học
 
-```bash
-cd abmgis
-python -m http.server 8000
-```
+Các trường `terrain`, `drainage`, `impervious` và phương trình tích nước trong demo được sinh xác định từ hình học/ID để minh họa kiến trúc ABMGIS. Chúng **không phải dữ liệu DEM, cống thoát nước hay mô hình thủy lực thực địa**.
 
-Sau đó mở `http://localhost:8000`.
+Để dùng cho nghiên cứu/điều hành thực tế, thay lớp môi trường minh họa bằng DEM/DTM, land cover, drainage, rainfall radar/gauge, road graph, hydrodynamic model hoặc sensor data đã được kiểm định.
 
-## GitHub Pages
+## Stack
 
-Workflow `.github/workflows/abmgis-pages.yml` đóng gói thư mục `abmgis/` và deploy lên GitHub Pages sau mỗi push vào `main` có thay đổi liên quan.
-
-## Chạy trực tiếp
-
-- ABMGIS GitHub Pages: https://base27-cvnss.github.io/NetLogo/
-- NetLogo Web: https://netlogoweb.org/launch#https://base27-cvnss.github.io/NetLogo/model/segregationDC-web.nlogo
+- NetLogo: reference model Schelling
+- MapLibre GL JS: render GIS
+- PMTiles protocol: basemap delivery
+- GeoJSON: vector environment
+- JavaScript: browser ABM runtime
+- GitHub Pages: static hosting
