@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#07141c" />
-  <title>ABMGIS · NetLogo + PMTiles</title>
-  <meta name="description" content="Mô phỏng tác tử GIS trên nền NetLogo, MapLibre và PMTiles." />
+  <meta name="theme-color" content="#061018" />
+  <title>ABMGIS Rain-60 · NetLogo × GIS</title>
+  <meta name="description" content="ABMGIS Rain-60: mô phỏng Schelling mở rộng trên GIS với mưa, ngập, tác tử độc lập, tuyến di chuyển và hành vi nổi lên." />
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css" crossorigin="anonymous" />
   <link rel="stylesheet" href="./styles.css" />
@@ -17,13 +17,12 @@
         <div class="brand-mark">A</div>
         <div>
           <div class="eyebrow">VIETFLEX · AGENT-BASED GIS</div>
-          <h1>ABMGIS <span>NetLogo × PMTiles</span></h1>
+          <h1>ABMGIS <span>Rain-60 · Schelling × GIS × Time</span></h1>
         </div>
       </div>
       <div class="top-actions">
-        <span id="runtimeBadge" class="badge"><i></i> PMTiles đang nạp</span>
-        <a class="ghost-btn accent-btn" href="https://netlogoweb.org/launch#https://base27-cvnss.github.io/NetLogo/model/segregationDC-web.nlogo" target="_blank" rel="noopener">Chạy NetLogo Web ↗</a>
-        <a class="ghost-btn" href="./model/segregationDC-web.nlogo" download>Tải mô hình NetLogo</a>
+        <span id="runtimeBadge" class="badge"><i></i> Đang nạp mô hình</span>
+        <a class="ghost-btn" href="./model/segregationDC-web.nlogo" target="_blank" rel="noopener">NetLogo gốc ↗</a>
         <a class="ghost-btn" href="https://github.com/Base27-CVNSS/NetLogo/tree/main/abmgis" target="_blank" rel="noopener">Mã nguồn</a>
       </div>
     </header>
@@ -31,95 +30,133 @@
     <main class="workspace">
       <aside class="panel controls-panel">
         <section class="panel-section hero-copy">
-          <div class="section-kicker">MÔ PHỎNG PHÂN TÁCH KHÔNG GIAN</div>
-          <h2>Schelling trên địa lý thật</h2>
-          <p>188 vùng của Washington, D.C. được chuyển từ Shapefile của mô hình NetLogo gốc. Tác tử Đỏ/Xanh chỉ di chuyển sang vùng trống kề cạnh khi mức tương đồng không đạt ngưỡng.</p>
+          <div class="section-kicker">MÔI TRƯỜNG ĐỘNG + TÁC TỬ ĐỘC LẬP</div>
+          <h2>Mưa 60 phút trên mô hình Schelling</h2>
+          <p>Polygon là môi trường GIS; Đỏ/Xanh là các agent độc lập. Mỗi phút, mưa làm thay đổi ngập và khả năng tiếp cận, sau đó từng agent cảm nhận, đánh giá utility, quyết định ở lại, tái định cư hoặc sơ tán.</p>
+          <div class="scenario-note">Kịch bản thủy văn dùng tham số minh họa để chứng minh kiến trúc ABMGIS, <b>không phải dự báo ngập thực địa</b>.</div>
         </section>
 
         <section class="panel-section">
-          <div class="section-title"><span>Điều khiển</span><strong id="runState">Sẵn sàng</strong></div>
+          <div class="section-title"><span>Điều khiển mô phỏng</span><strong id="runState">Sẵn sàng</strong></div>
           <div class="button-grid">
             <button id="setupBtn" class="primary">Khởi tạo</button>
-            <button id="stepBtn">Chạy 1 bước</button>
-            <button id="runBtn">Chạy liên tục</button>
+            <button id="stepBtn">+ 1 phút</button>
+            <button id="runBtn">Chạy 60 phút</button>
             <button id="resetViewBtn">Về toàn cảnh</button>
           </div>
+
           <label class="control-row">
-            <span>Ngưỡng hài lòng <b id="thresholdValue">35%</b></span>
-            <input id="threshold" type="range" min="1" max="100" step="1" value="35" />
+            <span>Cường độ mưa <b id="rainValue">60 mm/h</b></span>
+            <input id="rainIntensity" type="range" min="20" max="120" step="5" value="60" />
           </label>
           <label class="control-row">
-            <span>Tốc độ <b id="speedValue">4 bước/s</b></span>
-            <input id="speed" type="range" min="1" max="12" step="1" value="4" />
+            <span>Ngưỡng Schelling <b id="thresholdValue">35%</b></span>
+            <input id="threshold" type="range" min="10" max="90" step="5" value="35" />
           </label>
+          <label class="control-row">
+            <span>Tốc độ <b id="speedValue">6 phút/s</b></span>
+            <input id="speed" type="range" min="1" max="15" step="1" value="6" />
+          </label>
+
           <div class="preset-row">
-            <button data-threshold="25">Khoan dung 25%</button>
-            <button data-threshold="50">Cân bằng 50%</button>
-            <button data-threshold="75">Khắt khe 75%</button>
+            <button data-rain="35">Mưa vừa 35</button>
+            <button data-rain="60">Mưa lớn 60</button>
+            <button data-rain="100">Mưa cực đoan 100</button>
           </div>
         </section>
 
         <section class="panel-section stats-grid">
-          <article><span>Tick</span><b id="tickStat">0</b></article>
-          <article><span>Tác tử</span><b id="agentStat">150</b></article>
-          <article><span>Hài lòng</span><b id="happyStat">—</b></article>
-          <article><span>Vùng trống</span><b id="emptyStat">38</b></article>
-          <article><span>Di chuyển</span><b id="moveStat">0</b></article>
-          <article><span>Đồng nhóm TB</span><b id="sameStat">—</b></article>
+          <article><span>Thời gian</span><b id="timeStat">00:00</b></article>
+          <article><span>Mưa tích lũy</span><b id="rainStat">0 mm</b></article>
+          <article><span>Agent</span><b id="agentStat">150</b></article>
+          <article><span>Đang sơ tán</span><b id="evacStat">0</b></article>
+          <article><span>Max ngập</span><b id="depthStat">0 cm</b></article>
+          <article><span>Phơi nhiễm</span><b id="exposureStat">0</b></article>
         </section>
 
         <section class="panel-section">
-          <div class="section-title"><span>Lớp bản đồ</span><strong>GIS</strong></div>
+          <div class="section-title"><span>Lớp ABMGIS</span><strong>GIS runtime</strong></div>
           <label class="toggle"><input id="basemapToggle" type="checkbox" checked><span></span> Nền PMTiles</label>
-          <label class="toggle"><input id="areasToggle" type="checkbox" checked><span></span> Vùng tác tử</label>
-          <label class="toggle"><input id="outlineToggle" type="checkbox" checked><span></span> Ranh giới</label>
-          <label class="toggle"><input id="labelsToggle" type="checkbox"><span></span> Nhãn ID vùng</label>
+          <label class="toggle"><input id="waterToggle" type="checkbox" checked><span></span> Mức ngập theo vùng</label>
+          <label class="toggle"><input id="agentsToggle" type="checkbox" checked><span></span> Agent Đỏ / Xanh</label>
+          <label class="toggle"><input id="trailsToggle" type="checkbox" checked><span></span> Quỹ đạo di chuyển</label>
+          <label class="toggle"><input id="shelterToggle" type="checkbox" checked><span></span> Điểm trú ẩn</label>
+          <label class="toggle"><input id="outlineToggle" type="checkbox" checked><span></span> Ranh giới GIS</label>
         </section>
 
         <section class="panel-section source-note">
-          <div class="section-title"><span>Nguồn mô hình</span><strong>NetLogo</strong></div>
-          <code>setup → move → update-colors → tick</code>
-          <p>Bản web giữ topology 1.130 quan hệ láng giềng từ dữ liệu gốc; I/O file được thay bằng JSON/HTTP để tương thích trình duyệt.</p>
+          <div class="section-title"><span>Chu trình mỗi tick</span><strong>1 tick = 1 phút</strong></div>
+          <code>rain → hydrology → access → perceive → decide → move → exposure → render</code>
+          <p>Schelling chỉ là một thành phần utility. Khi ngập tăng, trọng số an toàn tăng và có thể lấn át sở thích xã hội.</p>
         </section>
       </aside>
 
       <section class="map-stage">
-        <div id="map" aria-label="Bản đồ mô phỏng ABMGIS"></div>
+        <div id="map" aria-label="Bản đồ mô phỏng ABMGIS Rain-60"></div>
+        <div class="rain-screen" id="rainScreen"></div>
         <div class="map-overlay top-left">
-          <div class="legend">
-            <span><i class="swatch red"></i> Nhóm Đỏ</span>
-            <span><i class="swatch blue"></i> Nhóm Xanh</span>
-            <span><i class="swatch empty"></i> Chưa cư trú</span>
+          <div class="legend legend-stack">
+            <div class="legend-row"><span><i class="agent-dot red"></i> Agent Đỏ</span><span><i class="agent-dot blue"></i> Agent Xanh</span><span><i class="shelter-mark"></i> Trú ẩn</span></div>
+            <div class="legend-row water-legend"><span>Ngập</span><i class="w0"></i><i class="w1"></i><i class="w2"></i><i class="w3"></i><i class="w4"></i><small>0 → 50+ cm</small></div>
           </div>
         </div>
+        <div class="map-overlay top-center timeline-card">
+          <span>KỊCH BẢN MƯA LIÊN TỤC</span>
+          <b id="clockLabel">00:00 / 01:00</b>
+          <div><i id="timeProgress"></i></div>
+        </div>
         <div class="map-overlay bottom-left info-card">
-          <div><span>Hover</span><b id="hoverWard">Di chuột lên một vùng</b></div>
-          <div><span>Trạng thái</span><b id="hoverState">—</b></div>
-          <div><span>Láng giềng</span><b id="hoverNeighbors">—</b></div>
+          <div><span>Vùng</span><b id="hoverWard">Di chuột lên polygon</b></div>
+          <div><span>Mức ngập</span><b id="hoverDepth">—</b></div>
+          <div><span>Agent</span><b id="hoverAgents">—</b></div>
+          <div><span>Thoát nước</span><b id="hoverDrain">—</b></div>
         </div>
       </section>
 
       <aside class="panel insight-panel">
+        <section class="panel-section decision-card">
+          <div class="section-title"><span>Agent được chọn</span><strong id="selectedAgentStatus">Click một agent</strong></div>
+          <div class="agent-profile">
+            <div class="agent-avatar" id="selectedAgentAvatar">A</div>
+            <div>
+              <b id="selectedAgentId">Chưa chọn</b>
+              <span id="selectedAgentGroup">—</span>
+            </div>
+          </div>
+          <div class="decision-grid">
+            <span>Vùng hiện tại <b id="selectedAgentZone">—</b></span>
+            <span>Đồng nhóm <b id="selectedAgentSocial">—</b></span>
+            <span>Ngập <b id="selectedAgentDepth">—</b></span>
+            <span>Ngưỡng chịu ngập <b id="selectedAgentTolerance">—</b></span>
+            <span>Utility <b id="selectedAgentUtility">—</b></span>
+            <span>Mục tiêu <b id="selectedAgentTarget">—</b></span>
+          </div>
+          <p id="selectedAgentReason" class="decision-reason">Chọn một chấm Đỏ/Xanh trên bản đồ để xem vì sao agent quyết định ở lại, tái định cư hoặc sơ tán.</p>
+        </section>
+
         <section class="panel-section">
-          <div class="section-title"><span>Diễn biến</span><strong>Hài lòng theo thời gian</strong></div>
+          <div class="section-title"><span>Hành vi nổi lên</span><strong id="phaseLabel">Khởi tạo</strong></div>
           <canvas id="chart" width="520" height="220"></canvas>
-          <div class="chart-scale"><span>0%</span><span>100%</span></div>
+          <div class="chart-legend"><span><i class="line-happy"></i> Hài lòng xã hội</span><span><i class="line-water"></i> Ngập TB (chuẩn hóa)</span></div>
         </section>
-        <section class="panel-section">
-          <div class="section-title"><span>Chỉ số cấu trúc</span><strong id="phaseLabel">Khởi tạo</strong></div>
-          <div class="meter-row"><span>Đỏ</span><div><i id="redBar"></i></div><b id="redCount">75</b></div>
-          <div class="meter-row"><span>Xanh</span><div><i id="blueBar"></i></div><b id="blueCount">75</b></div>
-          <div class="meter-row"><span>Trống</span><div><i id="emptyBar"></i></div><b id="emptyCount">38</b></div>
-          <p class="hint">Khi ngưỡng tăng, số tác tử bất mãn thường tăng; hệ thống có xu hướng tự tái cấu trúc thành các cụm đồng màu hơn.</p>
+
+        <section class="panel-section metrics-list">
+          <div><span>Hài lòng xã hội</span><b id="happyStat">—</b></div>
+          <div><span>Đồng nhóm trung bình</span><b id="sameStat">—</b></div>
+          <div><span>Đã di chuyển</span><b id="moveStat">0</b></div>
+          <div><span>Đã trú ẩn</span><b id="shelteredStat">0</b></div>
+          <div><span>Agent tại vùng > 20 cm</span><b id="riskAgentStat">0</b></div>
         </section>
+
         <section class="panel-section">
-          <div class="section-title"><span>Nhật ký mô phỏng</span><strong>ABM runtime</strong></div>
+          <div class="section-title"><span>Nhật ký sự kiện</span><strong>ABM runtime</strong></div>
           <div id="log" class="log" aria-live="polite"></div>
         </section>
+
         <section class="panel-section architecture">
-          <div class="section-title"><span>Kiến trúc</span><strong>Web-native</strong></div>
-          <div class="flow"><b>NetLogo</b><span>→</span><b>Topology</b><span>→</span><b>ABM</b><span>→</span><b>MapLibre</b><span>→</span><b>PMTiles</b></div>
-          <p>Mô phỏng chạy tại máy người dùng; GitHub Pages chỉ phục vụ tệp tĩnh. Không cần backend.</p>
+          <div class="section-title"><span>Kiến trúc</span><strong>ABMGIS</strong></div>
+          <div class="flow"><b>GIS</b><span>→</span><b>Environment</b><span>→</span><b>Agent</b><span>→</span><b>Decision</b><span>→</span><b>Emergence</b></div>
+          <p>Polygon không còn là agent. Môi trường và tác tử được lưu bằng state riêng, tương tác qua topology không gian và thời gian.</p>
         </section>
       </aside>
     </main>
