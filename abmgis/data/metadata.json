@@ -1,13 +1,16 @@
 {
-  "polygons": 188,
-  "red": 75,
-  "blue": 75,
-  "unoccupied": 38,
-  "neighborPairs": 1130,
-  "bounds": [
-    -77.1199,
-    38.791512999999995,
-    -76.909395,
-    38.99511
-  ]
+  "model": "ABMGIS AEIO-1000",
+  "theory": "AEIO: Agent + Environment + Interaction + Organisation",
+  "sourcePolygons": 188,
+  "macroEnvironments": 188,
+  "microEnvironments": 1128,
+  "microEnvironmentsPerPolygon": 6,
+  "logicalLanesPerDirection": 3,
+  "directions": 2,
+  "agents": 1000,
+  "tickSeconds": 5,
+  "ticksPerHour": 720,
+  "durationSeconds": 3600,
+  "neighborRelations": 1130,
+  "note": "Micro-environments, lane geometry, signals and hydrology are demonstrative logical states; replace with surveyed/calibrated GIS data for real-world use."
 }
