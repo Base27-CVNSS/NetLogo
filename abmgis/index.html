@@ -1,169 +1,55 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#061018" />
-  <title>ABMGIS Rain-60 · NetLogo × GIS</title>
-  <meta name="description" content="ABMGIS Rain-60: mô phỏng Schelling mở rộng trên GIS với mưa, ngập, tác tử độc lập, tuyến di chuyển và hành vi nổi lên." />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#061018">
+  <title>ABMGIS AEIO-1000 · NetLogo × GIS</title>
+  <meta name="description" content="ABMGIS AEIO-1000: 1000 tác tử dị thể, 1128 vi môi trường, tương tác cục bộ, tổ chức và hỗn loạn trên nền GIS.">
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css" crossorigin="anonymous" />
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">A</div>
-        <div>
-          <div class="eyebrow">VIETFLEX · AGENT-BASED GIS</div>
-          <h1>ABMGIS <span>Rain-60 · Schelling × GIS × Time</span></h1>
-        </div>
-      </div>
-      <div class="top-actions">
-        <span id="runtimeBadge" class="badge"><i></i> Đang nạp mô hình</span>
-        <a class="ghost-btn" href="./model/segregationDC-web.nlogo" target="_blank" rel="noopener">NetLogo gốc ↗</a>
-        <a class="ghost-btn" href="https://github.com/Base27-CVNSS/NetLogo/tree/main/abmgis" target="_blank" rel="noopener">Mã nguồn</a>
-      </div>
-    </header>
-
-    <main class="workspace">
-      <aside class="panel controls-panel">
-        <section class="panel-section hero-copy">
-          <div class="section-kicker">MÔI TRƯỜNG ĐỘNG + TÁC TỬ ĐỘC LẬP</div>
-          <h2>Mưa 60 phút trên mô hình Schelling</h2>
-          <p>Polygon là môi trường GIS; Đỏ/Xanh là các agent độc lập. Mỗi phút, mưa làm thay đổi ngập và khả năng tiếp cận, sau đó từng agent cảm nhận, đánh giá utility, quyết định ở lại, tái định cư hoặc sơ tán.</p>
-          <div class="scenario-note">Kịch bản thủy văn dùng tham số minh họa để chứng minh kiến trúc ABMGIS, <b>không phải dự báo ngập thực địa</b>.</div>
-        </section>
-
-        <section class="panel-section">
-          <div class="section-title"><span>Điều khiển mô phỏng</span><strong id="runState">Sẵn sàng</strong></div>
-          <div class="button-grid">
-            <button id="setupBtn" class="primary">Khởi tạo</button>
-            <button id="stepBtn">+ 1 phút</button>
-            <button id="runBtn">Chạy 60 phút</button>
-            <button id="resetViewBtn">Về toàn cảnh</button>
-          </div>
-
-          <label class="control-row">
-            <span>Cường độ mưa <b id="rainValue">60 mm/h</b></span>
-            <input id="rainIntensity" type="range" min="20" max="120" step="5" value="60" />
-          </label>
-          <label class="control-row">
-            <span>Ngưỡng Schelling <b id="thresholdValue">35%</b></span>
-            <input id="threshold" type="range" min="10" max="90" step="5" value="35" />
-          </label>
-          <label class="control-row">
-            <span>Tốc độ <b id="speedValue">6 phút/s</b></span>
-            <input id="speed" type="range" min="1" max="15" step="1" value="6" />
-          </label>
-
-          <div class="preset-row">
-            <button data-rain="35">Mưa vừa 35</button>
-            <button data-rain="60">Mưa lớn 60</button>
-            <button data-rain="100">Mưa cực đoan 100</button>
-          </div>
-        </section>
-
-        <section class="panel-section stats-grid">
-          <article><span>Thời gian</span><b id="timeStat">00:00</b></article>
-          <article><span>Mưa tích lũy</span><b id="rainStat">0 mm</b></article>
-          <article><span>Agent</span><b id="agentStat">150</b></article>
-          <article><span>Đang sơ tán</span><b id="evacStat">0</b></article>
-          <article><span>Max ngập</span><b id="depthStat">0 cm</b></article>
-          <article><span>Phơi nhiễm</span><b id="exposureStat">0</b></article>
-        </section>
-
-        <section class="panel-section">
-          <div class="section-title"><span>Lớp ABMGIS</span><strong>GIS runtime</strong></div>
-          <label class="toggle"><input id="basemapToggle" type="checkbox" checked><span></span> Nền PMTiles</label>
-          <label class="toggle"><input id="waterToggle" type="checkbox" checked><span></span> Mức ngập theo vùng</label>
-          <label class="toggle"><input id="agentsToggle" type="checkbox" checked><span></span> Agent Đỏ / Xanh</label>
-          <label class="toggle"><input id="trailsToggle" type="checkbox" checked><span></span> Quỹ đạo di chuyển</label>
-          <label class="toggle"><input id="shelterToggle" type="checkbox" checked><span></span> Điểm trú ẩn</label>
-          <label class="toggle"><input id="outlineToggle" type="checkbox" checked><span></span> Ranh giới GIS</label>
-        </section>
-
-        <section class="panel-section source-note">
-          <div class="section-title"><span>Chu trình mỗi tick</span><strong>1 tick = 1 phút</strong></div>
-          <code>rain → hydrology → access → perceive → decide → move → exposure → render</code>
-          <p>Schelling chỉ là một thành phần utility. Khi ngập tăng, trọng số an toàn tăng và có thể lấn át sở thích xã hội.</p>
-        </section>
-      </aside>
-
-      <section class="map-stage">
-        <div id="map" aria-label="Bản đồ mô phỏng ABMGIS Rain-60"></div>
-        <div class="rain-screen" id="rainScreen"></div>
-        <div class="map-overlay top-left">
-          <div class="legend legend-stack">
-            <div class="legend-row"><span><i class="agent-dot red"></i> Agent Đỏ</span><span><i class="agent-dot blue"></i> Agent Xanh</span><span><i class="shelter-mark"></i> Trú ẩn</span></div>
-            <div class="legend-row water-legend"><span>Ngập</span><i class="w0"></i><i class="w1"></i><i class="w2"></i><i class="w3"></i><i class="w4"></i><small>0 → 50+ cm</small></div>
-          </div>
-        </div>
-        <div class="map-overlay top-center timeline-card">
-          <span>KỊCH BẢN MƯA LIÊN TỤC</span>
-          <b id="clockLabel">00:00 / 01:00</b>
-          <div><i id="timeProgress"></i></div>
-        </div>
-        <div class="map-overlay bottom-left info-card">
-          <div><span>Vùng</span><b id="hoverWard">Di chuột lên polygon</b></div>
-          <div><span>Mức ngập</span><b id="hoverDepth">—</b></div>
-          <div><span>Agent</span><b id="hoverAgents">—</b></div>
-          <div><span>Thoát nước</span><b id="hoverDrain">—</b></div>
-        </div>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark">A</div><div><div class="eyebrow">VIETFLEX · AGENT-BASED GIS · AEIO</div><h1>ABMGIS <span>AEIO-1000 · Chaos × Rain × Traffic × Schelling</span></h1></div></div>
+    <div class="top-actions"><span id="runtimeBadge" class="badge"><i></i> Đang nạp mô hình</span><a class="ghost-btn" href="./model/segregationDC-web.nlogo" target="_blank" rel="noopener">NetLogo tham chiếu ↗</a><a class="ghost-btn" href="https://github.com/Base27-CVNSS/NetLogo/tree/main/abmgis" target="_blank" rel="noopener">Mã nguồn</a></div>
+  </header>
+  <main class="workspace">
+    <aside class="panel controls-panel">
+      <section class="panel-section hero-copy"><div class="section-kicker">AEIO · AGENT + ENVIRONMENT + INTERACTION + ORGANISATION</div><h2>1.000 tác tử trong môi trường hỗn loạn</h2><p>188 vùng GIS được mở rộng logic thành <b>1.128 vi môi trường</b> (6 ô hành vi/vùng). 1.000 tác tử có loại phương tiện, tốc độ, kiên nhẫn, tuân thủ, khoảng cách an toàn, vùng quan sát và quyết định riêng.</p><div class="scenario-note">Mưa/ngập và vi làn là <b>môi trường mô phỏng minh họa</b>. Cấu trúc AEIO bám theo bài báo; Schelling và mưa là lớp mở rộng thử nghiệm.</div></section>
+      <section class="panel-section aeio-grid"><article><b>A</b><span>1.000 Agent dị thể</span></article><article><b>E</b><span>188 vùng / 1.128 vi vùng</span></article><article><b>I</b><span>nhìn thấy · bám · tránh · đổi làn</span></article><article><b>O</b><span>đèn · khoảng cách · mức tuân thủ</span></article></section>
+      <section class="panel-section">
+        <div class="section-title"><span>Điều khiển</span><strong id="runState">Sẵn sàng</strong></div>
+        <div class="button-grid"><button id="setupBtn" class="primary">Khởi tạo 1.000</button><button id="stepBtn">+ 5 giây</button><button id="runBtn">Chạy 60 phút</button><button id="resetViewBtn">Về toàn cảnh</button></div>
+        <label class="control-row"><span>Mức hỗn loạn <b id="chaosValue">65%</b></span><input id="chaos" type="range" min="0" max="100" step="5" value="65"></label>
+        <label class="control-row"><span>Cường độ mưa <b id="rainValue">60 mm/h</b></span><input id="rainIntensity" type="range" min="0" max="120" step="5" value="60"></label>
+        <label class="control-row"><span>Ngưỡng Schelling <b id="thresholdValue">35%</b></span><input id="threshold" type="range" min="10" max="90" step="5" value="35"></label>
+        <label class="control-row"><span>Tốc độ mô phỏng <b id="speedValue">30 tick/s</b></span><input id="speed" type="range" min="1" max="60" step="1" value="30"></label>
+        <div class="preset-row"><button data-chaos="20">Có tổ chức</button><button data-chaos="65">Hỗn loạn</button><button data-chaos="90">Cực hỗn loạn</button></div>
       </section>
-
-      <aside class="panel insight-panel">
-        <section class="panel-section decision-card">
-          <div class="section-title"><span>Agent được chọn</span><strong id="selectedAgentStatus">Click một agent</strong></div>
-          <div class="agent-profile">
-            <div class="agent-avatar" id="selectedAgentAvatar">A</div>
-            <div>
-              <b id="selectedAgentId">Chưa chọn</b>
-              <span id="selectedAgentGroup">—</span>
-            </div>
-          </div>
-          <div class="decision-grid">
-            <span>Vùng hiện tại <b id="selectedAgentZone">—</b></span>
-            <span>Đồng nhóm <b id="selectedAgentSocial">—</b></span>
-            <span>Ngập <b id="selectedAgentDepth">—</b></span>
-            <span>Ngưỡng chịu ngập <b id="selectedAgentTolerance">—</b></span>
-            <span>Utility <b id="selectedAgentUtility">—</b></span>
-            <span>Mục tiêu <b id="selectedAgentTarget">—</b></span>
-          </div>
-          <p id="selectedAgentReason" class="decision-reason">Chọn một chấm Đỏ/Xanh trên bản đồ để xem vì sao agent quyết định ở lại, tái định cư hoặc sơ tán.</p>
-        </section>
-
-        <section class="panel-section">
-          <div class="section-title"><span>Hành vi nổi lên</span><strong id="phaseLabel">Khởi tạo</strong></div>
-          <canvas id="chart" width="520" height="220"></canvas>
-          <div class="chart-legend"><span><i class="line-happy"></i> Hài lòng xã hội</span><span><i class="line-water"></i> Ngập TB (chuẩn hóa)</span></div>
-        </section>
-
-        <section class="panel-section metrics-list">
-          <div><span>Hài lòng xã hội</span><b id="happyStat">—</b></div>
-          <div><span>Đồng nhóm trung bình</span><b id="sameStat">—</b></div>
-          <div><span>Đã di chuyển</span><b id="moveStat">0</b></div>
-          <div><span>Đã trú ẩn</span><b id="shelteredStat">0</b></div>
-          <div><span>Agent tại vùng > 20 cm</span><b id="riskAgentStat">0</b></div>
-        </section>
-
-        <section class="panel-section">
-          <div class="section-title"><span>Nhật ký sự kiện</span><strong>ABM runtime</strong></div>
-          <div id="log" class="log" aria-live="polite"></div>
-        </section>
-
-        <section class="panel-section architecture">
-          <div class="section-title"><span>Kiến trúc</span><strong>ABMGIS</strong></div>
-          <div class="flow"><b>GIS</b><span>→</span><b>Environment</b><span>→</span><b>Agent</b><span>→</span><b>Decision</b><span>→</span><b>Emergence</b></div>
-          <p>Polygon không còn là agent. Môi trường và tác tử được lưu bằng state riêng, tương tác qua topology không gian và thời gian.</p>
-        </section>
-      </aside>
-    </main>
-  </div>
-
-  <script src="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
-  <script src="./app.js"></script>
+      <section class="panel-section stats-grid"><article><span>Thời gian</span><b id="timeStat">00:00</b></article><article><span>Agent</span><b id="agentStat">1000</b></article><article><span>Vi môi trường</span><b id="microStat">1128</b></article><article><span>Tốc độ TB</span><b id="avgSpeedStat">0 km/h</b></article><article><span>Ùn tắc</span><b id="congestionStat">0%</b></article><article><span>Near-miss</span><b id="nearMissStat">0</b></article></section>
+      <section class="panel-section"><div class="section-title"><span>Lớp ABMGIS</span><strong>Runtime</strong></div><label class="toggle"><input id="basemapToggle" type="checkbox" checked><span></span>Nền PMTiles</label><label class="toggle"><input id="waterToggle" type="checkbox" checked><span></span>Mức ngập vùng GIS</label><label class="toggle"><input id="microToggle" type="checkbox" checked><span></span>1.128 vi môi trường</label><label class="toggle"><input id="agentsToggle" type="checkbox" checked><span></span>1.000 tác tử</label><label class="toggle"><input id="trailsToggle" type="checkbox"><span></span>Quỹ đạo tác tử</label><label class="toggle"><input id="shelterToggle" type="checkbox" checked><span></span>Điểm trú ẩn</label><label class="toggle"><input id="outlineToggle" type="checkbox" checked><span></span>Ranh giới GIS</label></section>
+      <section class="panel-section source-note"><div class="section-title"><span>Chu trình vi mô</span><strong>Δt = 5 giây</strong></div><code>environment → perceive → interact → organisation → decide → follow/change-lane/route → move → emergence</code><p>Chế độ hỗn loạn làm giảm tuân thủ, rút ngắn khoảng cách chấp nhận và tăng đổi làn; va chạm vẫn được tác tử chủ động né tránh.</p></section>
+    </aside>
+    <section class="map-stage">
+      <div id="map" aria-label="Bản đồ mô phỏng ABMGIS AEIO-1000"></div><div class="rain-screen" id="rainScreen"></div>
+      <div class="map-overlay top-left"><div class="legend legend-stack"><div class="legend-row"><span><i class="agent-dot moto"></i>Xe máy</span><span><i class="agent-dot car"></i>Ô tô</span><span><i class="agent-dot heavy"></i>Xe lớn</span><span><i class="shelter-mark"></i>Trú ẩn</span></div><div class="legend-row water-legend"><span>Ngập</span><i class="w0"></i><i class="w1"></i><i class="w2"></i><i class="w3"></i><i class="w4"></i><small>0 → 50+ cm</small></div></div></div>
+      <div class="map-overlay top-center timeline-card"><span>1 GIỜ · 720 TICK · 5 GIÂY/TICK</span><b id="clockLabel">00:00 / 01:00:00</b><div><i id="timeProgress"></i></div></div>
+      <div class="map-overlay bottom-left info-card"><div><span>Vùng GIS</span><b id="hoverWard">Di chuột lên vùng</b></div><div><span>Ngập</span><b id="hoverDepth">—</b></div><div><span>Agent</span><b id="hoverAgents">—</b></div><div><span>Mật độ vi vùng</span><b id="hoverDensity">—</b></div></div>
+    </section>
+    <aside class="panel insight-panel">
+      <section class="panel-section decision-card"><div class="section-title"><span>Tác tử được chọn</span><strong id="selectedAgentStatus">Click một tác tử</strong></div><div class="agent-profile"><div class="agent-avatar" id="selectedAgentAvatar">A</div><div><b id="selectedAgentId">Chưa chọn</b><span id="selectedAgentType">—</span></div></div><div class="decision-grid"><span>Vùng / vi vùng <b id="selectedAgentZone">—</b></span><span>Tốc độ <b id="selectedAgentSpeed">—</b></span><span>Khoảng cách an toàn <b id="selectedAgentGap">—</b></span><span>Tuân thủ <b id="selectedAgentCompliance">—</b></span><span>Kiên nhẫn <b id="selectedAgentPatience">—</b></span><span>Đồng nhóm <b id="selectedAgentSocial">—</b></span><span>Ngập <b id="selectedAgentDepth">—</b></span><span>Mục tiêu <b id="selectedAgentTarget">—</b></span></div><p id="selectedAgentReason" class="decision-reason">Chọn một agent để xem chuỗi cảm nhận → tương tác → tổ chức → quyết định.</p></section>
+      <section class="panel-section"><div class="section-title"><span>Emergence</span><strong id="phaseLabel">Khởi tạo</strong></div><canvas id="chart" width="520" height="220"></canvas><div class="chart-legend"><span><i class="line-speed"></i>Tốc độ TB</span><span><i class="line-congestion"></i>Ùn tắc</span><span><i class="line-chaos"></i>Rối loạn hệ thống</span></div></section>
+      <section class="panel-section metrics-list"><div><span>Xe máy / ô tô / xe lớn</span><b id="vehicleMixStat">—</b></div><div><span>Đang bám xe</span><b id="followStat">0</b></div><div><span>Đổi làn</span><b id="laneChangeStat">0</b></div><div><span>Chờ đèn / cản trở</span><b id="waitStat">0</b></div><div><span>Sơ tán / trú ẩn</span><b id="evacStat">0 / 0</b></div><div><span>Phơi nhiễm >20 cm</span><b id="exposureStat">0</b></div></section>
+      <section class="panel-section"><div class="section-title"><span>Nhật ký sự kiện</span><strong>AEIO runtime</strong></div><div id="log" class="log" aria-live="polite"></div></section>
+      <section class="panel-section architecture"><div class="section-title"><span>Kiến trúc lý thuyết</span><strong>AEIO</strong></div><div class="flow"><b>Agent</b><span>+</span><b>Environment</b><span>+</span><b>Interaction</b><span>+</span><b>Organisation</b></div><p>Phần nổi lên được đo bằng tốc độ trung bình, ùn tắc, near-miss, đổi làn, phơi nhiễm và dòng sơ tán; không lập trình sẵn kết quả cuối.</p></section>
+    </aside>
+  </main>
+</div>
+<script src="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
+<script src="./app.js"></script>
 </body>
 </html>
